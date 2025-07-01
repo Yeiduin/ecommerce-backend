@@ -1,0 +1,3 @@
+yeiduin contraseña JnRWTRRJtnzhhw4i
+
+conducto mongo : mongodb+srv://yeiduin:JnRWTRRJtnzhhw4i@cluster0.hlrg5bd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
