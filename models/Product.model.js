@@ -15,6 +15,11 @@ const productSchema = new Schema(
       required: [true, "La descripción es obligatoria."],
       trim: true,
     },
+    brand: {
+      type: String,
+      required: [true, "La marca es obligatoria."],
+      trim: true,
+    },
     price: {
       type: Number,
       required: [true, "El precio es obligatorio."],

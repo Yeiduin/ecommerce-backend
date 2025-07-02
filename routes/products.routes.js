@@ -4,6 +4,8 @@ import {
   getAllProducts,
   getProductById,
   getProductCategories,
+  getProductBrands,
+  getRecentProducts,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -13,7 +15,9 @@ import { protect, admin } from "../middleware/auth.middleware.js";
 const router = express.Router();
 
 // Rutas Públicas (cualquiera puede ver productos)
+router.get("/recent", getRecentProducts);
 router.get("/categories", getProductCategories);
+router.get("/brands", getProductBrands);
 router.get("/", getAllProducts);
 router.get("/:id", getProductById);
 

@@ -1,28 +1,47 @@
 // ecommerce-backend/controllers/order.controller.js
 import Order from "../models/Order.model.js";
 import User from "../models/User.model.js";
+import Product from "../models/Product.model.js";
 
 export const createOrder = async (req, res) => {
   try {
     const { orderItems, shippingAddress, paymentMethod, totalPrice } = req.body;
+
     if (orderItems && orderItems.length === 0) {
       return res
         .status(400)
         .json({ message: "No hay artículos en el pedido." });
+    } else {
+      const order = new Order({
+        user: req.user._id,
+        orderItems: orderItems.map((item) => ({
+          ...item,
+          product: item._id,
+          _id: undefined,
+        })),
+        shippingAddress,
+        paymentMethod,
+        totalPrice,
+      });
+
+      // Guardamos el pedido en la base de datos
+      const createdOrder = await order.save();
+
+      // ===== NUEVA LÓGICA DE ACTUALIZACIÓN DE STOCK =====
+      // 2. Recorremos cada item del pedido recién creado
+      for (const item of createdOrder.orderItems) {
+        // Buscamos el producto correspondiente en la base de datos
+        const product = await Product.findById(item.product);
+        if (product) {
+          // Restamos la cantidad comprada del stock actual
+          product.stock = product.stock - item.quantity;
+          // Guardamos el producto actualizado
+          await product.save();
+        }
+      }
+
+      res.status(201).json(createdOrder);
     }
-    const order = new Order({
-      user: req.user._id,
-      orderItems: orderItems.map((item) => ({
-        ...item,
-        product: item._id,
-        _id: undefined,
-      })),
-      shippingAddress,
-      paymentMethod,
-      totalPrice,
-    });
-    const createdOrder = await order.save();
-    res.status(201).json(createdOrder);
   } catch (error) {
     res.status(500).json({
       message: "Error en el servidor al crear pedido",

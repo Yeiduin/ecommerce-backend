@@ -7,6 +7,7 @@ import userRoutes from "./routes/user.routes.js"; // 1. Importa las rutas de usu
 import categoryRoutes from "./routes/category.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import summaryRoutes from "./routes/summary.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
 
 // Conectamos a la base de datos
 connectDB();
@@ -27,6 +28,7 @@ app.use("/api/users", userRoutes); // 2. Usa las rutas de usuario
 app.use("/api/categories", categoryRoutes); // rutas para las categorias de productos
 app.use("/api/orders", orderRoutes);
 app.use("/api/summary", summaryRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // Le decimos al servidor que empiece a escuchar en el puerto definido
 app.listen(PORT, () => {
