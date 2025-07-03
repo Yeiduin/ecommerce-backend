@@ -3,8 +3,12 @@ import Category from "../models/Category.model.js";
 
 export const getAllProducts = async (req, res) => {
   try {
-    const { category, search, sort, brand } = req.query;
+    // 1. OBTENEMOS LOS PARÁMETROS DE LA URL
+    const { page = 1, limit = 10, category, search, sort, brand } = req.query;
+
     let filter = {};
+
+    // Lógica de búsqueda (sin cambios)
     if (search) {
       const matchingCategories = await Category.find({
         name: { $regex: search, $options: "i" },
@@ -17,6 +21,8 @@ export const getAllProducts = async (req, res) => {
         { category: { $in: categoryIds } },
       ];
     }
+
+    // Lógica de filtro por categoría (sin cambios)
     if (category && category !== "Todos") {
       const categoryObj = await Category.findOne({
         name: { $regex: `^${category}$`, $options: "i" },
@@ -24,32 +30,51 @@ export const getAllProducts = async (req, res) => {
       if (categoryObj) {
         filter.category = categoryObj._id;
       } else {
-        return res.status(200).json([]);
+        return res
+          .status(200)
+          .json({ products: [], page: 1, pages: 0, total: 0 });
       }
     }
+
+    // Lógica de filtro por marca (sin cambios)
     if (brand && brand !== "Todos") {
       filter.brand = { $regex: `^${brand}$`, $options: "i" };
     }
-    let query = Product.find(filter).populate("category");
+
+    // 2. CONTAMOS EL TOTAL DE DOCUMENTOS QUE COINCIDEN CON LOS FILTROS
+    const totalProducts = await Product.countDocuments(filter);
+
+    // 3. CONSTRUIMOS LA CONSULTA CON PAGINACIÓN Y ORDENAMIENTO
+    let query = Product.find(filter)
+      .populate("category")
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit));
+
+    // Lógica de ordenamiento (sin cambios)
     if (sort) {
-      if (sort === "price-asc") {
-        query = query.sort({ price: 1 });
-      } else if (sort === "price-desc") {
-        query = query.sort({ price: -1 });
-      } else if (sort === "name-asc") {
+      if (sort === "price-asc") query = query.sort({ price: 1 });
+      else if (sort === "price-desc") query = query.sort({ price: -1 });
+      else if (sort === "name-asc")
         query = query
           .collation({ locale: "en", strength: 2 })
           .sort({ name: 1 });
-      } else if (sort === "name-desc") {
+      else if (sort === "name-desc")
         query = query
           .collation({ locale: "en", strength: 2 })
           .sort({ name: -1 });
-      }
     } else {
       query = query.sort({ createdAt: -1 });
     }
+
     const products = await query;
-    res.status(200).json(products);
+
+    // 4. DEVOLVEMOS UN OBJETO COMPLETO CON LOS DATOS DE PAGINACIÓN
+    res.status(200).json({
+      products,
+      page: parseInt(page),
+      pages: Math.ceil(totalProducts / parseInt(limit)), // Calculamos el total de páginas
+      total: totalProducts,
+    });
   } catch (error) {
     res
       .status(500)
@@ -116,12 +141,10 @@ export const updateProduct = async (req, res) => {
       res.status(404).json({ message: "Producto no encontrado" });
     }
   } catch (error) {
-    res
-      .status(400)
-      .json({
-        message: "Error al actualizar el producto",
-        error: error.message,
-      });
+    res.status(400).json({
+      message: "Error al actualizar el producto",
+      error: error.message,
+    });
   }
 };
 
@@ -146,12 +169,10 @@ export const getProductCategories = async (req, res) => {
     const categories = await Category.find().sort({ name: 1 });
     res.status(200).json(categories);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error al obtener las categorías",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error al obtener las categorías",
+      error: error.message,
+    });
   }
 };
 
@@ -174,11 +195,9 @@ export const getRecentProducts = async (req, res) => {
       .populate("category");
     res.status(200).json(products);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error al obtener los productos recientes",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error al obtener los productos recientes",
+      error: error.message,
+    });
   }
 };

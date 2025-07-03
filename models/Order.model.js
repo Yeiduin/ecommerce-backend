@@ -8,6 +8,8 @@ const orderSchema = new Schema(
       required: true,
       ref: "User",
     },
+
+    orderNumber: { type: Number },
     orderItems: [
       {
         name: { type: String, required: true },
