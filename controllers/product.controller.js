@@ -76,12 +76,10 @@ export const getAllProducts = async (req, res) => {
       total: totalProducts,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error al obtener los productos",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error al obtener los productos",
+      error: error.message,
+    });
   }
 };
 
@@ -199,5 +197,58 @@ export const getRecentProducts = async (req, res) => {
       message: "Error al obtener los productos recientes",
       error: error.message,
     });
+  }
+};
+
+// @desc    Crear una nueva reseña
+// @route   POST /api/products/:id/reviews
+export const createProductReview = async (req, res) => {
+  const { rating, comment } = req.body;
+
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Producto no encontrado" });
+    }
+
+    // Verificamos si el usuario ya ha dejado una reseña en este producto
+    const alreadyReviewed = product.reviews.find(
+      (r) => r.user.toString() === req.user._id.toString()
+    );
+
+    if (alreadyReviewed) {
+      return res
+        .status(400)
+        .json({ message: "Ya has dejado una reseña para este producto" });
+    }
+
+    // Creamos el objeto de la nueva reseña
+    const review = {
+      name: req.user.name,
+      rating: Number(rating),
+      comment,
+      user: req.user._id,
+    };
+
+    // Añadimos la nueva reseña al array de reseñas del producto
+    product.reviews.push(review);
+
+    // Actualizamos el número total de reseñas
+    product.numReviews = product.reviews.length;
+
+    // Calculamos el nuevo promedio de calificación
+    product.rating =
+      product.reviews.reduce((acc, item) => item.rating + acc, 0) /
+      product.reviews.length;
+
+    // Guardamos los cambios en la base de datos
+    await product.save();
+    res.status(201).json({ message: "Reseña añadida con éxito" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Error en el servidor al añadir la reseña" });
   }
 };

@@ -1,6 +1,21 @@
 // models/Product.model.js
 
 import { Schema, model } from "mongoose";
+const reviewSchema = new Schema(
+  {
+    name: { type: String, required: true }, // Nombre del usuario que deja la reseña
+    rating: { type: Number, required: true }, // Calificación de 1 a 5
+    comment: { type: String, required: true }, // Comentario
+    user: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "User", // Referencia al usuario que hizo la reseña
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 // Definimos el Schema (el plano) de nuestros productos
 const productSchema = new Schema(
@@ -37,6 +52,17 @@ const productSchema = new Schema(
     image: {
       type: String, // Guardaremos la URL de la imagen
       required: false, // Hacemos que la imagen no sea obligatoria por ahora
+    },
+    reviews: [reviewSchema], // Un array de reseñas
+    rating: {
+      type: Number,
+      required: true,
+      default: 0, // Calificación promedio
+    },
+    numReviews: {
+      type: Number,
+      required: true,
+      default: 0, // Número total de reseñas
     },
   },
   {

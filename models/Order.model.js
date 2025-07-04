@@ -23,6 +23,8 @@ const orderSchema = new Schema(
       },
     ],
     shippingAddress: {
+      fullName: { type: String, required: true }, // Nombre de quien recibe
+      phone: { type: String, required: true }, // Celular de contacto
       address: { type: String, required: true },
       city: { type: String, required: true },
       postalCode: { type: String, required: true },
@@ -31,7 +33,6 @@ const orderSchema = new Schema(
     paymentMethod: {
       type: String,
       required: true,
-      default: "Prueba",
     },
     totalPrice: {
       type: Number,

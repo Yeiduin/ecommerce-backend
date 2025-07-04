@@ -9,6 +9,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  createProductReview,
 } from "../controllers/product.controller.js";
 import { protect, admin } from "../middleware/auth.middleware.js";
 
@@ -20,6 +21,7 @@ router.get("/categories", getProductCategories);
 router.get("/brands", getProductBrands);
 router.get("/", getAllProducts);
 router.get("/:id", getProductById);
+router.post("/:id/reviews", protect, createProductReview);
 
 // Rutas Protegidas (solo para administradores)
 // Para llegar a createProduct, la petición debe pasar primero por 'protect' y luego por 'admin'.
