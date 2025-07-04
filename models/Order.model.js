@@ -8,7 +8,8 @@ const orderSchema = new Schema(
       required: true,
       ref: "User",
     },
-
+    // --- NUEVO CAMPO ---
+    // Este será nuestro ID numérico y amigable
     orderNumber: { type: Number },
     orderItems: [
       {

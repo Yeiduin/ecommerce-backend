@@ -2,6 +2,7 @@
 import Order from "../models/Order.model.js";
 import User from "../models/User.model.js";
 import Product from "../models/Product.model.js";
+// Importamos el modelo Counter que ya tenías
 import Counter from "../models/Counter.model.js";
 
 // @desc    Crear un nuevo pedido
@@ -20,11 +21,19 @@ export const createOrder = async (req, res) => {
     const order = new Order({
       user: req.user._id,
       orderNumber,
+
+      // --- CORRECCIÓN CLAVE AQUÍ ---
+      // En lugar de esparcir todas las propiedades del item (...item),
+      // creamos un nuevo objeto solo con los campos que el modelo necesita.
+      // Esto evita que campos extra (como _id) causen conflictos al guardar.
       orderItems: orderItems.map((item) => ({
-        ...item,
-        product: item._id,
-        _id: undefined,
+        name: item.name,
+        quantity: item.quantity,
+        image: item.image,
+        price: item.price,
+        product: item.product, // El frontend ya envía este campo con el ID correcto
       })),
+
       shippingAddress,
       paymentMethod,
       totalPrice,
@@ -32,6 +41,7 @@ export const createOrder = async (req, res) => {
 
     const createdOrder = await order.save();
 
+    // El resto de la lógica no cambia...
     for (const item of createdOrder.orderItems) {
       const product = await Product.findById(item.product);
       if (product) {
@@ -42,6 +52,8 @@ export const createOrder = async (req, res) => {
 
     res.status(201).json(createdOrder);
   } catch (error) {
+    // Es buena idea loguear el error para depurar en el futuro
+    console.error("Error al crear el pedido:", error);
     res.status(500).json({
       message: "Error en el servidor al crear pedido",
       error: error.message,
@@ -93,6 +105,7 @@ export const getOrderById = async (req, res) => {
   }
 };
 
+// --- FUNCIÓN MEJORADA ---
 // @desc    Obtener todos los pedidos (solo admin) con búsqueda y filtros
 // @route   GET /api/orders/all
 export const getAllOrders = async (req, res) => {
@@ -100,10 +113,13 @@ export const getAllOrders = async (req, res) => {
     const { search, sort } = req.query;
     let filter = {};
 
+    // Lógica de búsqueda avanzada
     if (search) {
+      // Si el término de búsqueda es un número, buscamos por el nuevo 'orderNumber'
       if (!isNaN(search)) {
         filter.orderNumber = search;
       } else {
+        // Si no, buscamos por nombre de usuario o nombre de producto
         const users = await User.find({
           name: { $regex: search, $options: "i" },
         });
@@ -117,12 +133,14 @@ export const getAllOrders = async (req, res) => {
 
     let query = Order.find(filter).populate("user", "name email");
 
+    // Lógica de filtros (ordenamiento)
     if (sort) {
       if (sort === "date-desc") query = query.sort({ createdAt: -1 });
       else if (sort === "date-asc") query = query.sort({ createdAt: 1 });
       else if (sort === "price-desc") query = query.sort({ totalPrice: -1 });
       else if (sort === "price-asc") query = query.sort({ totalPrice: 1 });
     } else {
+      // Por defecto, ordenamos por más reciente
       query = query.sort({ createdAt: -1 });
     }
 
