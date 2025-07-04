@@ -8,8 +8,6 @@ const orderSchema = new Schema(
       required: true,
       ref: "User",
     },
-    // --- NUEVO CAMPO ---
-    // Este será nuestro ID numérico y amigable
     orderNumber: { type: Number },
     orderItems: [
       {
@@ -49,13 +47,13 @@ const orderSchema = new Schema(
       type: Date,
       default: Date.now,
     },
-    isDelivered: {
-      type: Boolean,
+    // --- CAMBIOS AQUÍ ---
+    // Reemplazamos los campos isDelivered y deliveredAt por un único campo "status".
+    status: {
+      type: String,
       required: true,
-      default: false,
-    },
-    deliveredAt: {
-      type: Date,
+      enum: ["En proceso", "Enviado", "Entregado", "Cancelado"],
+      default: "En proceso",
     },
   },
   {
