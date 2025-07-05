@@ -8,6 +8,7 @@ import categoryRoutes from "./routes/category.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import summaryRoutes from "./routes/summary.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
+import ticketRoutes from "./routes/ticket.routes.js";
 
 // Conectamos a la base de datos
 connectDB();
@@ -29,7 +30,7 @@ app.use("/api/categories", categoryRoutes); // rutas para las categorias de prod
 app.use("/api/orders", orderRoutes);
 app.use("/api/summary", summaryRoutes);
 app.use("/api/upload", uploadRoutes);
-
+app.use("/api/tickets", ticketRoutes);
 // Le decimos al servidor que empiece a escuchar en el puerto definido
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
