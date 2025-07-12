@@ -4,7 +4,7 @@ import Category from "../models/Category.model.js";
 // Obtener todas las categorías
 export const getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find().sort("name");
+    const categories = await Category.find().sort({ name: 1 });
     res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener las categorías" });
@@ -18,9 +18,12 @@ export const createCategory = async (req, res) => {
     if (!name) {
       return res.status(400).json({ message: "El nombre es requerido" });
     }
-    const categoryExists = await Category.findOne({ name });
+    // Verificación sin distinguir mayúsculas/minúsculas
+    const categoryExists = await Category.findOne({
+      name: { $regex: new RegExp(`^${name}$`, "i") },
+    });
     if (categoryExists) {
-      return res.status(400).json({ message: "La categoría ya existe" });
+      return res.status(400).json({ message: "La categoría ya existe." });
     }
     const category = await Category.create({ name });
     res.status(201).json(category);

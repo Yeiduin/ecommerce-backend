@@ -189,7 +189,7 @@ export const getRecentProducts = async (req, res) => {
   try {
     const products = await Product.find({})
       .sort({ createdAt: -1 })
-      .limit(4)
+      .limit(12) // <- CAMBIA EL LÍMITE DE 4 A 12
       .populate("category");
     res.status(200).json(products);
   } catch (error) {
